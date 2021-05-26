@@ -4,7 +4,6 @@ module.exports = function( gulp ) {
 	const fs        = require( 'fs' );
 	const zip       = require( 'gulp-vinyl-zip' ).zip;
 	const sync      = require( 'fs-sync' );
-	const sequence  = require( 'run-sequence' ).use( gulp );
 	const parseJson = require( 'json-parse-better-errors' )
 
 	// this task copies files we'll zip into a build directory
@@ -59,7 +58,7 @@ module.exports = function( gulp ) {
 		}
 
 		sync.mkdir( json._zipfoldername );
-		return gulp.src( [ ...zipInclude, ...commonZipInclude ], { base: '.' } )
+		return gulp.src( [ ...zipInclude, ...commonZipInclude ], { allowEmpty: true, base: '.' } )
 			.pipe( gulp.dest( json._zipfoldername ) );
 	} );
 
@@ -84,27 +83,11 @@ module.exports = function( gulp ) {
 		cb();
 	} );
 
-	var task;
-
-	// Gulp is v3.
-	if ( gulp.hasTask ) {
-		task = function( cb ) {
-			sequence(
-				'zip-copy-files',
-				'zip-do-zip',
-				'zip-purge-build-dir',
-				cb
-			);
-		};
-
-	// Gulp is v4.
-	} else {
-		task = gulp.series(
-			'zip-copy-files',
-			'zip-do-zip',
-			'zip-purge-build-dir',
-		);
-	}
+	var task = gulp.series(
+		'zip-copy-files',
+		'zip-do-zip',
+		'zip-purge-build-dir',
+	);
 
 	gulp.task( 'zip', task );
 };
